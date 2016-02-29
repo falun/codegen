@@ -9,10 +9,6 @@ import (
 	"github.com/falun/go-genny-codegen/typeset"
 )
 
-type T struct {
-	A string
-}
-
 func main() {
 	fmt.Println("testing string set")
 	ts := typeset.NewStringSet(typeset.StringStringyKeyFn)
