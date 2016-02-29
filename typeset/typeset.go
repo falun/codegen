@@ -13,8 +13,9 @@ type Type generic.Type
 type TypeToKeyFn func(Type) ([]byte, error)
 
 type TypeSet struct {
-	contents map[string]bool
-	toKey    TypeToKeyFn
+	contents    map[string]bool
+	toKey       TypeToKeyFn
+	verifyingFn VerificationFn
 }
 
 func TypeJSONKeyFn(t Type) ([]byte, error) {
@@ -30,6 +31,10 @@ func NewTypeSet(toKey TypeToKeyFn) TypeSet {
 		contents: make(map[string]bool),
 		toKey:    toKey,
 	}
+}
+
+func (ts *TypeSet) SetVerifier(fn VerificationFn) {
+	ts.verifyingFn = fn
 }
 
 func (ts TypeSet) Contains(t Type) (bool, error) {
@@ -74,6 +79,12 @@ func (ts TypeSet) UnmarshalJSON(data []byte) error {
 
 	ts.contents = make(map[string]bool)
 	for _, v := range s {
+		if ts.verifyingFn != nil {
+			e := ts.verifyingFn(v)
+			if e != nil {
+				return e
+			}
+		}
 		ts.contents[v] = true
 	}
 

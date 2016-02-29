@@ -12,8 +12,9 @@ import (
 type StringToKeyFn func(string) ([]byte, error)
 
 type StringSet struct {
-	contents map[string]bool
-	toKey    StringToKeyFn
+	contents    map[string]bool
+	toKey       StringToKeyFn
+	verifyingFn VerificationFn
 }
 
 func StringJSONKeyFn(t string) ([]byte, error) {
@@ -29,6 +30,10 @@ func NewStringSet(toKey StringToKeyFn) StringSet {
 		contents: make(map[string]bool),
 		toKey:    toKey,
 	}
+}
+
+func (ts *StringSet) SetVerifier(fn VerificationFn) {
+	ts.verifyingFn = fn
 }
 
 func (ts StringSet) Contains(t string) (bool, error) {
@@ -73,6 +78,12 @@ func (ts StringSet) UnmarshalJSON(data []byte) error {
 
 	ts.contents = make(map[string]bool)
 	for _, v := range s {
+		if ts.verifyingFn != nil {
+			e := ts.verifyingFn(v)
+			if e != nil {
+				return e
+			}
+		}
 		ts.contents[v] = true
 	}
 
@@ -82,8 +93,9 @@ func (ts StringSet) UnmarshalJSON(data []byte) error {
 type IntToKeyFn func(int) ([]byte, error)
 
 type IntSet struct {
-	contents map[string]bool
-	toKey    IntToKeyFn
+	contents    map[string]bool
+	toKey       IntToKeyFn
+	verifyingFn VerificationFn
 }
 
 func IntJSONKeyFn(t int) ([]byte, error) {
@@ -99,6 +111,10 @@ func NewIntSet(toKey IntToKeyFn) IntSet {
 		contents: make(map[string]bool),
 		toKey:    toKey,
 	}
+}
+
+func (ts *IntSet) SetVerifier(fn VerificationFn) {
+	ts.verifyingFn = fn
 }
 
 func (ts IntSet) Contains(t int) (bool, error) {
@@ -143,6 +159,12 @@ func (ts IntSet) UnmarshalJSON(data []byte) error {
 
 	ts.contents = make(map[string]bool)
 	for _, v := range s {
+		if ts.verifyingFn != nil {
+			e := ts.verifyingFn(v)
+			if e != nil {
+				return e
+			}
+		}
 		ts.contents[v] = true
 	}
 

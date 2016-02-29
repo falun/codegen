@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/falun/go-genny-codegen/typeset"
 )
@@ -60,4 +61,41 @@ func main() {
 		log.Fatal(e)
 	}
 	fmt.Printf("is is: %s\n", string(s))
+
+	fmt.Println("\n\nTesting unmarshal")
+	is2 := typeset.NewIntSet(typeset.IntStringyKeyFn)
+	str := `["1234", "1235"]`
+	e = json.Unmarshal([]byte(str), &is2)
+
+	fmt.Println(e)
+	fmt.Println(is2.Contains(1234))
+	fmt.Println(is2.Contains(1235))
+	fmt.Println(is2.Contains(29083))
+
+	fmt.Println("\n\nTesting broken unmarshal")
+	is3 := typeset.NewIntSet(typeset.IntStringyKeyFn)
+	str = `["a1234", "b1235"]`
+	e = json.Unmarshal([]byte(str), &is3)
+
+	fmt.Println(e)
+	fmt.Println(is3.Contains(1234))
+	fmt.Println(is3.Contains(1235))
+	fmt.Println(is3.Contains(29083))
+
+	fmt.Println("\n\nTesting verified unmarshal")
+	is4 := typeset.NewIntSet(typeset.IntStringyKeyFn)
+	is4.SetVerifier(verifyingIntKeyFn)
+	str = `["a1234", "b1235"]`
+	e = json.Unmarshal([]byte(str), &is4)
+
+	fmt.Println(e)
+	fmt.Println(is4.Contains(1234))
+	fmt.Println(is4.Contains(1235))
+	fmt.Println(is4.Contains(29083))
+
+}
+
+func verifyingIntKeyFn(s string) error {
+	_, e := strconv.ParseInt(s, 10, 64)
+	return e
 }
